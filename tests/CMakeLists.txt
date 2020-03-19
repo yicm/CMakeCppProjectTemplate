@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.4)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 PROJECT(Tests)
 
 INCLUDE_DIRECTORIES(
@@ -20,4 +20,9 @@ FOREACH(testsourcefile ${APP_SOURCES})
         ${SPDLOG_LIBS}
         module_logger
         )
+
+    INSTALL(TARGETS ${testname}
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin)
 ENDFOREACH(testsourcefile ${APP_SOURCES})
