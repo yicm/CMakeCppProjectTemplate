@@ -1,6 +1,6 @@
 # CMakeCppProjectTemplate
 
-A CMake C++ Project Template, letting you quickly start developing a C/C++ project. Implementation details can refer to [my blog post](https://xiaobaiai.net).
+A CMake C++ Project Template, letting you quickly start developing a C/C++ project. Implementation details can refer to [my blog post](https://mp.weixin.qq.com/s/mVnx3oua21De7zOtG1Mhvw).
 
 # Features
 
