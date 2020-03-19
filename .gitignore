@@ -1,0 +1,16 @@
+*.swp
+*.swo
+*.bak
+
+build/
+build*/
+release/
+cscope*
+tags*
+build_debug/
+build_release/
+.idea/
+build/
+cmake-build-debug/
+cmake-build-debug-remote-host/
+.vscode/
