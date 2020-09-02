@@ -1,73 +1,78 @@
-#ifndef HELLO_APP_LOGGER_LOGGER_HPP_
-#define HELLO_APP_LOGGER_LOGGER_HPP_
+#ifndef _HELLO_CORE_LOGGER_LOGGER_HPP_
+#define _HELLO_CORE_LOGGER_LOGGER_HPP_
 
 
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 
-#include "spdlog/spdlog.h"
-
 // You can define SPDLOG_ACTIVE_LEVEL to the desired log level before including "spdlog.h".
 // This will turn on/off logging statements at compile time
+#include "spdlog/spdlog.h"
 
-#define HELLO_APP_SPDLOG_LEVEL_TRACE 0
-#define HELLO_APP_SPDLOG_LEVEL_DEBUG 1
-#define HELLO_APP_SPDLOG_LEVEL_INFO 2
-#define HELLO_APP_SPDLOG_LEVEL_WARN 3
-#define HELLO_APP_SPDLOG_LEVEL_ERROR 4
-#define HELLO_APP_SPDLOG_LEVEL_CRITI 5
-#define HELLO_APP_SPDLOG_LEVEL_OFF 6
 
-#define HELLO_APP_SPDLOG_LOGGER_TRACE(logger, ...) SPDLOG_LOGGER_TRACE(logger, __VA_ARGS__)
-#define HELLO_APP_SPDLOG_LOGGER_DEBUG(logger, ...) SPDLOG_LOGGER_DEBUG(logger, __VA_ARGS__)
-#define HELLO_APP_SPDLOG_LOGGER_INFO(logger, ...) SPDLOG_LOGGER_INFO(logger, __VA_ARGS__)
-#define HELLO_APP_SPDLOG_LOGGER_WARN(logger, ...) SPDLOG_LOGGER_WARN(logger, __VA_ARGS__)
-#define HELLO_APP_SPDLOG_LOGGER_ERROR(logger, ...) SPDLOG_LOGGER_ERROR(logger, __VA_ARGS__)
-#define HELLO_APP_SPDLOG_LOGGER_CRITICAL(logger, ...) SPDLOG_LOGGER_CRITICAL(logger, __VA_ARGS__)
+// logger setting
+#define HELLO_LOGGER_NAME "hello"
+#define HELLO_LOGGER_LOGGER_ERROR_FILENAME "logs/hello_error.log"
+#define HELLO_LOGGER_LOGGER_TRACE_FILENAME "logs/hello_trace.log"
+#define HELLO_LOGGER_PATTERN "[%Y-%m-%d %H:%M:%S.%e][%^%l%$][%t][%s:%#] %v"
+#define HELLO_LOGGER_ROTATING_MAX_FILE_SIZE (1024*1024)
+#define HELLO_LOGGER_ROTATING_MAX_FILE_NUM 5
+
+
+#define _TRACE 0
+#define _DEBUG 1
+#define _INFO 2
+#define _WARN 3
+#define _ERROR 4
+#define _CRITI 5
+#define _OFF 6
+
+#define HELLO_LOGGER_TRACE(...) HelloLoggerOut(_TRACE, __FILE__, __LINE__, __VA_ARGS__)
+#define HELLO_LOGGER_DEBUG(...) HelloLoggerOut(_DEBUG, __FILE__, __LINE__, __VA_ARGS__)
+#define HELLO_LOGGER_INFO(...) HelloLoggerOut(_INFO, __FILE__, __LINE__, __VA_ARGS__)
+#define HELLO_LOGGER_WARN(...) HelloLoggerOut(_WARN, __FILE__, __LINE__, __VA_ARGS__)
+#define HELLO_LOGGER_ERROR(...) HelloLoggerOut(_ERROR, __FILE__, __LINE__, __VA_ARGS__)
+#define HELLO_LOGGER_CRITICAL(...) HelloLoggerOut(_CRITI, __FILE__, __LINE__, __VA_ARGS__)
+
 
 #ifdef __cplusplus
     extern "C" {
 #endif
 
-// if logger with such name exists, will return 1, else will return 0
-std::shared_ptr<spdlog::logger> HelloAppSpdlogGet(const char* logger_name);
 
-// set global formatting
-// detail see https://github.com/gabime/spdlog/wiki/3.-Custom-formatting
-// example: spdlog::set_pattern("%Y-%m-%d %H:%M:%S.%e %l : %v");
-void HelloAppSpdlogSetPattern(const char* format_string);
-
-// set global logging level
-void HelloAppSpdlogSetLevel(int log_level);
-
-// second
-void HelloAppSpdlogSetFlushEvery(int interval);
-
-// create and register multi/single threaded rotating file logger
-void HelloAppSpdlogRotatingLoggerMt(const char* logger_name,
-        const char* filename, size_t max_file_size, size_t max_files);
-
-// create file logger which creates new file on the given time
-// (default in  midnight)
-void HelloAppSpdlogDailyLoggerMt(const char* logger_name,
-        const char* filename, int hour, int minute);
-
-// creating loggers with multiple sinks
-void HelloAppSpdlogCombinedLoggerInit(
+void HelloLoggerInit(
         const bool with_color_console,
         const bool with_console,
         const bool with_error,
         const bool with_trace);
 
-void HelloAppSpdlogCombinedLoggerSetLevel(int log_level);
+void HelloLoggerSetLevel(const int level);
 
-void HelloAppSpdlogCombinedLoggerSetPattern(const char* format_string);
+void HelloLoggerSetPattern(const char* format);
 
-// drop all loggers reference while you don't use the logger
-void HelloAppSpdlogDrop();
+void HelloLoggerSetFlushEvery(const int interval);
+
+void HelloLoggerDrop();
+
 
 #ifdef __cplusplus
     }
 #endif
 
-#endif
+template<typename... T>
+void HelloLoggerOut(const int level,
+        const char* filename,
+        const int line,
+        const T &...msg) {
+    // Note: sdplog::get is a thread safe function
+    std::shared_ptr<spdlog::logger> logger_ptr = spdlog::get(HELLO_LOGGER_NAME);
+    if (!logger_ptr) {
+        fprintf(stderr, "Failed to get logger, Please init logger firstly.\n");
+    }
+    logger_ptr.get()->log(spdlog::source_loc{filename, line,
+            SPDLOG_FUNCTION},
+            static_cast<spdlog::level::level_enum>(level),
+            msg...);
+}
 
+
+#endif
